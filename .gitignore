@@ -39,3 +39,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local temporary files
+/create_fix.js
+/temp.txt
+/temp_patch.js
+
+# Local detail page backups
+/app/detail/[id]/page.tsx.backup
+/app/detail/[id]/page.tsx.tmp
+
+# Corrected backup exclusion rules
+/app/detail/\[id\]/page.tsx.backup
+/app/detail/\[id\]/page.tsx.tmp
