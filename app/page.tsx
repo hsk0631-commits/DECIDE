@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { DecisionProject, DecisionCategory, RequirementStatus, ScoreMap } from "@/types/decision";
 import { loadProjects, saveProject, deleteProject } from "@/utils/storage";
 import { DECISION_TEMPLATES } from "@/constants/templates";
 
 export default function Home() {
-  // Lazy initialization for expensive initial state
   const [showForm, setShowForm] = useState(false);
   const [inputMode, setInputMode] = useState<"direct" | "guided" | null>(null);
   const [title, setTitle] = useState("");
@@ -19,6 +18,22 @@ export default function Home() {
   const [completedCount, setCompletedCount] = useState(() => 
     loadProjects().filter(p => p.status === "completed").length
   );
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const dark = saved === "dark" || (!saved && prefersDark);
+    setIsDark(dark);
+    document.documentElement.classList.toggle("dark", dark);
+  }, []);
+
+  const toggleTheme = () => {
+    const next = !isDark;
+    setIsDark(next);
+    localStorage.setItem("theme", next ? "dark" : "light");
+    document.documentElement.classList.toggle("dark", next);
+  };
 
   const closeForm = () => {
     setShowForm(false);
@@ -94,16 +109,22 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F8F9FC] text-[#202437]">
+    <main className="min-h-screen bg-[#F8F9FC] text-[#202437] dark:bg-gray-900 dark:text-gray-100">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <div className="text-2xl font-black tracking-tight">
           DECIDE<span className="text-indigo-600">.</span>
         </div>
         <nav className="flex items-center gap-4">
-          <Link href="/stats" className="text-sm text-gray-500 hover:text-indigo-600 font-medium">
+          <button
+            onClick={toggleTheme}
+            className="text-sm text-gray-500 hover:text-indigo-600 font-medium dark:text-gray-400"
+          >
+            {isDark ? "라이트" : "다크"}
+          </button>
+          <Link href="/stats" className="text-sm text-gray-500 hover:text-indigo-600 font-medium dark:text-gray-400">
             통계 보기
           </Link>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 dark:text-gray-400">
             더 나은 결정을 위한 시작
           </div>
         </nav>
@@ -111,7 +132,7 @@ export default function Home() {
 
       <section className="mx-auto max-w-6xl px-6 pb-20 pt-16">
         <div className="max-w-3xl">
-          <div className="mb-6 inline-flex rounded-full bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-600">
+          <div className="mb-6 inline-flex rounded-full bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-600 dark:bg-indigo-900/30">
             YOUR DECISION, YOUR WAY
           </div>
 
@@ -121,7 +142,7 @@ export default function Home() {
             <span className="text-indigo-600">확신은 높이세요.</span>
           </h1>
 
-          <p className="mt-7 max-w-xl text-base leading-8 text-gray-500 sm:text-lg">
+          <p className="mt-7 max-w-xl text-base leading-8 text-gray-500 sm:text-lg dark:text-gray-400">
             선택하기 어려운 순간, DECIDE가 함께합니다.
             당신의 상황과 중요한 기준을 바탕으로
             더 납득할 수 있는 선택을 도와드립니다.
@@ -132,44 +153,44 @@ export default function Home() {
               setShowForm(!showForm);
               setInputMode(null);
             }}
-            className="mt-9 rounded-xl bg-indigo-600 px-7 py-4 font-semibold text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700"
+            className="mt-9 rounded-xl bg-indigo-600 px-7 py-4 font-semibold text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700 dark:shadow-indigo-900/30"
           >
             + 새로운 고민 시작하기
           </button>
         </div>
 
         {showForm && (
-          <div className="mt-10 max-w-xl rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+          <div className="mt-10 max-w-xl rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:bg-gray-800 dark:border-gray-700">
             {!inputMode ? (
               <>
                 <h2 className="text-xl font-bold">
                   고민을 어떻게 등록할까요?
                 </h2>
-                <p className="mt-2 text-sm text-gray-500">
+                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                   편한 방법을 선택해주세요.
                 </p>
 
                 <div className="mt-6 grid gap-4">
                   <button
                     onClick={() => setInputMode("direct")}
-                    className="rounded-xl border border-gray-200 p-5 text-left transition hover:border-indigo-500 hover:bg-indigo-50"
+                    className="rounded-xl border border-gray-200 p-5 text-left transition hover:border-indigo-500 hover:bg-indigo-50 dark:border-gray-600 dark:hover:bg-indigo-900/20"
                   >
                     <div className="text-lg font-bold">
                       직접 입력하기
                     </div>
-                    <p className="mt-2 text-sm text-gray-500">
+                    <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                       고민 내용과 선택지를 직접 작성합니다.
                     </p>
                   </button>
 
                   <button
                     onClick={() => setInputMode("guided")}
-                    className="rounded-xl border border-gray-200 p-5 text-left transition hover:border-indigo-500 hover:bg-indigo-50"
+                    className="rounded-xl border border-gray-200 p-5 text-left transition hover:border-indigo-500 hover:bg-indigo-50 dark:border-gray-600 dark:hover:bg-indigo-900/20"
                   >
                     <div className="text-lg font-bold">
                       템플릿으로 시작하기
                     </div>
-                    <p className="mt-2 text-sm text-gray-500">
+                    <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                       상황별 추천 템플릿을 선택해 고민을 빠르게 정리합니다.
                     </p>
                   </button>
@@ -177,7 +198,7 @@ export default function Home() {
 
                 <button
                   onClick={closeForm}
-                  className="mt-5 rounded-lg border border-gray-200 px-5 py-3 text-sm"
+                  className="mt-5 rounded-lg border border-gray-200 px-5 py-3 text-sm dark:border-gray-600"
                 >
                   취소
                 </button>
@@ -187,7 +208,7 @@ export default function Home() {
                 <h2 className="text-xl font-bold">
                   어떤 고민이 있나요?
                 </h2>
-                <p className="mt-2 text-sm text-gray-500">
+                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                   결정하고 싶은 내용을 간단하게 적어주세요.
                 </p>
 
@@ -195,17 +216,17 @@ export default function Home() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="예: 자동차를 바꿀까, 지금 차를 더 탈까?"
-                  className="mt-5 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-indigo-500"
+                  className="mt-5 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
                 />
 
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
                     고민 유형 (선택 사항)
                   </label>
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value as DecisionCategory)}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-indigo-500"
+                    className="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600"
                   >
                     {Object.entries(DECISION_TEMPLATES).map(([key, tmpl]) => (
                       <option key={key} value={key}>{tmpl.name}</option>
@@ -216,7 +237,7 @@ export default function Home() {
                 <div className="mt-4 flex gap-3">
                   <button
                     onClick={() => setInputMode(null)}
-                    className="rounded-lg border border-gray-200 px-5 py-3 text-sm"
+                    className="rounded-lg border border-gray-200 px-5 py-3 text-sm dark:border-gray-600"
                   >
                     뒤로
                   </button>
@@ -233,7 +254,7 @@ export default function Home() {
                 <h2 className="text-xl font-bold">
                   템플릿으로 시작하기
                 </h2>
-                <p className="mt-2 text-sm text-gray-500">
+                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                   상황에 맞는 템플릿을 선택하면 기준과 선택지가 자동으로 구성됩니다.
                 </p>
 
@@ -246,17 +267,17 @@ export default function Home() {
                         setInputMode("direct");
                         setTitle(tmpl.name + " 고민");
                       }}
-                      className="w-full rounded-xl border border-gray-200 p-4 text-left transition hover:border-indigo-500 hover:bg-indigo-50"
+                      className="w-full rounded-xl border border-gray-200 p-4 text-left transition hover:border-indigo-500 hover:bg-indigo-50 dark:border-gray-600 dark:hover:bg-indigo-900/20"
                     >
-                      <div className="font-bold text-gray-900">{tmpl.name}</div>
-                      <p className="mt-1 text-sm text-gray-500">{tmpl.description}</p>
+                      <div className="font-bold text-gray-900 dark:text-gray-100">{tmpl.name}</div>
+                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{tmpl.description}</p>
                     </button>
                   ))}
                 </div>
 
                 <button
                   onClick={() => setInputMode(null)}
-                  className="mt-5 rounded-lg border border-gray-200 px-5 py-3 text-sm"
+                  className="mt-5 rounded-lg border border-gray-200 px-5 py-3 text-sm dark:border-gray-600"
                 >
                   뒤로
                 </button>
@@ -272,37 +293,36 @@ export default function Home() {
           </div>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-gray-100 bg-white p-6">
+            <div className="rounded-2xl border border-gray-100 bg-white p-6 dark:bg-gray-800 dark:border-gray-700">
               <div className="text-sm text-gray-400">진행 중인 고민</div>
               <div className="mt-3 text-3xl font-bold text-indigo-600">{inProgressCount}</div>
-              <div className="mt-2 text-sm text-gray-500">
+              <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                 {inProgressCount > 0 
                   ? "진행 중인 결정을 계속해보세요." 
                   : "아직 진행 중인 결정이 없습니다."}
               </div>
             </div>
 
-            <div className="rounded-2xl border border-gray-100 bg-white p-6">
+            <div className="rounded-2xl border border-gray-100 bg-white p-6 dark:bg-gray-800 dark:border-gray-700">
               <div className="text-sm text-gray-400">완료한 결정</div>
               <div className="mt-3 text-3xl font-bold text-green-600">{completedCount}</div>
-              <div className="mt-2 text-sm text-gray-500">
+              <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                 {completedCount > 0
                   ? "당신의 결정 기록이 여기에 쌓입니다."
                   : "완료된 결정이 아직 없습니다."}
               </div>
             </div>
 
-            <div className="rounded-2xl border border-gray-100 bg-white p-6">
+            <div className="rounded-2xl border border-gray-100 bg-white p-6 dark:bg-gray-800 dark:border-gray-700">
               <div className="text-sm text-gray-400">결정 도우미</div>
               <div className="mt-3 text-xl font-bold">DECIDE</div>
-              <div className="mt-2 text-sm text-gray-500">
+              <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                 정답보다 납득할 수 있는 선택을.
               </div>
             </div>
           </div>
         </div>
 
-        {/* 프로젝트 리스트 */}
         {(inProgressCount > 0 || completedCount > 0) && (
           <div className="mt-16">
             <div className="flex items-center justify-between mb-6">
@@ -312,13 +332,13 @@ export default function Home() {
               {projects.map(project => (
                 <div
                   key={project.id}
-                  className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm hover:shadow-md transition"
+                  className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm hover:shadow-md transition dark:bg-gray-800 dark:border-gray-700"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0 mr-4">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-gray-900 truncate">{project.title}</h3>
-                        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-indigo-50 text-indigo-600">
+                        <h3 className="font-bold text-gray-900 truncate dark:text-gray-100">{project.title}</h3>
+                        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30">
                           {getCategoryName(project.category)}
                         </span>
                         {project.status === "completed" && (
@@ -327,26 +347,26 @@ export default function Home() {
                           </span>
                         )}
                       </div>
-                      <p className="mt-1 text-sm text-gray-500">
+                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                         {project.options.length}개 선택지 · {project.criteria.length}개 기준 · {formatDate(project.updatedAt)} 업데이트
                       </p>
                     </div>
                     <div className="flex gap-2">
                       <Link
                         href={"/detail/" + project.id}
-                        className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                       >
                         이어서 하기
                       </Link>
                       <Link
                         href={"/share/" + project.id}
-                        className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                       >
                         공유
                       </Link>
                       <button
                         onClick={() => handleDeleteProject(project.id)}
-                        className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+                        className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-800"
                       >
                         삭제
                       </button>
@@ -358,7 +378,7 @@ export default function Home() {
           </div>
         )}
 
-        <footer className="mt-24 border-t border-gray-200 pt-6 text-center text-sm text-gray-400">
+        <footer className="mt-24 border-t border-gray-200 pt-6 text-center text-sm text-gray-400 dark:border-gray-700">
           DECIDE © 2026. Make a choice you understand.
         </footer>
       </section>
