@@ -125,7 +125,7 @@ function DetailPageContent() {
     };
     setProject(updatedProject);
     saveProject(updatedProject);
-    router.push("/");
+    router.push("/review/" + project.id);
   }, [project, result, router]);
 
   if (loading) {
@@ -193,6 +193,16 @@ function DetailPageContent() {
     }
   };
 
+  const getStatusAccent = (status: string) => {
+    switch (status) {
+      case "RECOMMENDED": return "border-green-300 border-t-4 border-t-green-500 shadow-md shadow-green-100";
+      case "CONDITIONAL": return "border-yellow-300 border-t-4 border-t-yellow-500 shadow-md shadow-yellow-100";
+      case "INSUFFICIENT_DATA": return "border-gray-200 border-t-4 border-t-gray-400";
+      case "NO_VALID_OPTION": return "border-red-300 border-t-4 border-t-red-500 shadow-md shadow-red-100";
+      default: return "border-gray-200";
+    }
+  };
+
   return (
     <main className="min-h-screen bg-[#F8F9FC] text-[#202437]">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
@@ -215,6 +225,12 @@ function DetailPageContent() {
         </div>
         <div className="flex items-center gap-3">
           <Link href="/stats" className="text-sm text-gray-500 hover:text-indigo-600 font-medium">통계 보기</Link>
+          <Link
+            href={"/share/" + project.id}
+            className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            공유
+          </Link>
           {project.status === "in_progress" && (
             <button
               onClick={handleComplete}
@@ -246,10 +262,29 @@ function DetailPageContent() {
             <span>·</span>
             <span>평가 진행률 {progress}%</span>
           </div>
+
+          <div className="mt-4 max-w-md">
+            <div
+              className="h-2.5 w-full overflow-hidden rounded-full bg-gray-200"
+              role="progressbar"
+              aria-valuenow={progress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="평가 진행률"
+            >
+              <div
+                className="h-full rounded-full bg-indigo-500 transition-all duration-300"
+                style={{ width: progress + "%" }}
+              ></div>
+            </div>
+            <div className="mt-1.5 text-xs text-gray-400">
+              {evaluatedCount} / {totalPossible}개 항목 평가 완료
+            </div>
+          </div>
         </div>
 
         {result && (
-          <div className="mb-8 rounded-2xl border bg-white p-6 shadow-sm">
+          <div className={"mb-8 overflow-hidden rounded-2xl border bg-white p-6 " + getStatusAccent(result.status)}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">실시간 추천 결과</h2>
               <span className={"inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold border " + getStatusColor(result.status)}>
@@ -271,7 +306,7 @@ function DetailPageContent() {
                 return (
                   <div 
                     key={score.optionId} 
-                    className={"flex items-center justify-between p-4 rounded-xl transition " + (isBest ? "bg-green-50 border border-green-200" : "bg-gray-50 border border-gray-100")}
+                    className={"flex items-center justify-between p-4 rounded-xl transition " + (isBest ? "border-2 border-green-400 bg-gradient-to-r from-green-50 to-white shadow-sm" : "border border-gray-100 bg-gray-50")}
                   >
                     <div className="flex items-center gap-3">
                       {score.isTie && (
@@ -279,10 +314,10 @@ function DetailPageContent() {
                           박빙
                         </span>
                       )}
-                      <span className="font-medium text-gray-900">{option?.title}</span>
+                      <span className={isBest ? "font-bold text-base text-gray-900" : "font-medium text-gray-900"}>{option?.title}</span>
                       {isBest && (
-                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800">
-                          1위
+                        <span className="inline-flex items-center rounded-full bg-green-600 px-2.5 py-1 text-xs font-bold text-white shadow-sm">
+                          🏆 1위 추천
                         </span>
                       )}
                     </div>

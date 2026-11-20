@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { DecisionProject, DecisionCategory, RequirementStatus, ScoreMap } from "@/types/decision";
-import { loadProjects, saveProject } from "@/utils/storage";
+import { loadProjects, saveProject, deleteProject } from "@/utils/storage";
 import { DECISION_TEMPLATES } from "@/constants/templates";
 
 export default function Home() {
@@ -16,7 +16,7 @@ export default function Home() {
   const [inProgressCount, setInProgressCount] = useState(() => 
     loadProjects().filter(p => p.status === "in_progress").length
   );
-  const [completedCount] = useState(() => 
+  const [completedCount, setCompletedCount] = useState(() => 
     loadProjects().filter(p => p.status === "completed").length
   );
 
@@ -68,6 +68,20 @@ export default function Home() {
     setProjects(prev => [newProject, ...prev]);
     setInProgressCount(prev => prev + 1);
     closeForm();
+  };
+
+  const handleDeleteProject = (id: string) => {
+    if (!confirm("이 고민을 삭제하시겠어요? 삭제한 기록은 되돌릴 수 없습니다.")) return;
+
+    const target = projects.find(p => p.id === id);
+    deleteProject(id);
+    setProjects(prev => prev.filter(p => p.id !== id));
+
+    if (target?.status === "completed") {
+      setCompletedCount(prev => Math.max(0, prev - 1));
+    } else {
+      setInProgressCount(prev => Math.max(0, prev - 1));
+    }
   };
 
   const getCategoryName = (cat: DecisionCategory) => {
@@ -324,6 +338,18 @@ export default function Home() {
                       >
                         이어서 하기
                       </Link>
+                      <Link
+                        href={"/share/" + project.id}
+                        className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                      >
+                        공유
+                      </Link>
+                      <button
+                        onClick={() => handleDeleteProject(project.id)}
+                        className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+                      >
+                        삭제
+                      </button>
                     </div>
                   </div>
                 </div>
